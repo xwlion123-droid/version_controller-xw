@@ -89,7 +89,7 @@ public class Enemy : MonoBehaviour
         // EffectPoolManager.Instance?.PlayExplosionEffect(transform.position);
 
         // ✅ 播放爆炸音效
-        AudioPoolManager.Instance?.PlayExplosion();
+        // AudioPoolManager.Instance?.PlayExplosion();
 
         Debug.Log($"{name}死亡");
         // ✅ 回池而非销毁

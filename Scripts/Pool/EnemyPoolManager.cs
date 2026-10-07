@@ -44,6 +44,11 @@ public class EnemyPoolManager : SingletonBase<EnemyPoolManager>, IPersistent
         Enemy enemyScript = enemy.AddComponent<Enemy>();
         enemyScript.SetPool(_pool);
 
+        //改用EnemyAI
+        EnemyAI ai = enemy.GetComponent<EnemyAI>();
+        // ai.SetPool(_pool);//如果你需要池引用
+
+
         // ✅ 确保 Rigidbody 存在（OnCollisionEnter 需要）
         if (enemy.GetComponent<Rigidbody>() == null)
         {
@@ -59,6 +64,12 @@ public class EnemyPoolManager : SingletonBase<EnemyPoolManager>, IPersistent
     void OnGetEnemy(GameObject enemy)
     {
         enemy.SetActive(true);
+        //重置AI状态
+        EnemyAI ai = enemy.GetComponent<EnemyAI>();
+        if (ai != null)
+        {
+            ai.ResetState();
+        }
     }
 
     void OnReleaseEnemy(GameObject enemy)
@@ -97,10 +108,17 @@ public class EnemyPoolManager : SingletonBase<EnemyPoolManager>, IPersistent
         enemy.transform.rotation = rotation;
 
         // 传入敌人数据
-        Enemy enemyScript = enemy.GetComponent<Enemy>();
-        if (enemyScript != null && data != null)
+        // Enemy enemyScript = enemy.GetComponent<Enemy>();
+        // if (enemyScript != null && data != null)
+        // {
+        //     enemyScript.Initialize(data);
+        // }
+
+        //初始化EnemyAI
+        EnemyAI ai = enemy.GetComponent<EnemyAI>();
+        if (ai != null && data != null)
         {
-            enemyScript.Initialize(data);
+            ai.Initialize(data);
         }
 
         return enemy;

@@ -118,12 +118,18 @@ public class UIManager : SingletonBase<UIManager>, IPersistent
         PlayerController player = FindFirstObjectByType<PlayerController>();
         if (player != null)
         {
-            player.enabled = true;
+            // player.enabled = true;
             player.transform.position = Vector3.zero;
         }
         // 清理旧敌人
         // ✅ 改成回池
-        foreach (var enemy in FindObjectsByType<Enemy>(FindObjectsSortMode.None))
+        // foreach (var enemy in FindObjectsByType<Enemy>(FindObjectsSortMode.None))
+        // {
+        //     EnemyPoolManager.Instance?.ReleaseEnemy(enemy.gameObject);
+        // }
+
+        //清理敌人的代码
+        foreach (var enemy in FindObjectsByType<EnemyAI>(FindObjectsSortMode.None))
         {
             EnemyPoolManager.Instance?.ReleaseEnemy(enemy.gameObject);
         }

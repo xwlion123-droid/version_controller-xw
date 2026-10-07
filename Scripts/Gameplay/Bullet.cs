@@ -57,13 +57,21 @@ public class Bullet : MonoBehaviour
         if (collision.gameObject.CompareTag("Enemy"))
         {
             //造成伤害
-            Enemy enemy = collision.gameObject.GetComponent<Enemy>();
+            // Enemy enemy = collision.gameObject.GetComponent<Enemy>();
+            // if (enemy != null)
+            // {
+            //     enemy.TakeDamage(damage);
+            // }
+
+            // 改用EnemyAI
+            EnemyAI enemy = collision.gameObject.GetComponent<EnemyAI>();
             if (enemy != null)
             {
                 enemy.TakeDamage(damage);
             }
+
             // ✅ 播放命中音效
-            AudioPoolManager.Instance?.PlayHit();
+            // AudioPoolManager.Instance?.PlayHit();
 
             // ✅ 播放命中特效
             // EffectPoolManager.Instance?.PlayHitEffect(transform.position);

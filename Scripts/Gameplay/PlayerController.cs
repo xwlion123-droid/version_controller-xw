@@ -212,7 +212,7 @@ public class PlayerController : MonoBehaviour
             //受到伤害
             GameManager.Instance?.TakeDamage(1);
             // ✅ 播放受伤音效
-            AudioPoolManager.Instance?.PlayDamage();
+            // AudioPoolManager.Instance?.PlayDamage();
 
             BecomeInvincible(playerData?.InvincibleTime ?? 1f);
 

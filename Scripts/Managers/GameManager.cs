@@ -53,7 +53,7 @@ public class GameManager : SingletonBase<GameManager>, IPersistent
         onScoreChanged?.RaiseEvent(score);
 
         // ✅ 播放得分音效
-        AudioPoolManager.Instance?.PlayScore();
+        // AudioPoolManager.Instance?.PlayScore();
         Debug.Log($"<color=green>得分：+{amount},总分：{score}</color>");
     }
 
