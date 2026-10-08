@@ -24,6 +24,7 @@ public class AudioPoolManager : SingletonBase<AudioPoolManager>, IPersistent
 
     void InitializeClips()
     {
+
         // ✅ 程序化生成音效
         _clips["Shoot"] = ProceduralAudio.CreateShootSound();
         _clips["Hit"] = ProceduralAudio.CreateHitSound();

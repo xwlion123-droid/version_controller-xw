@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEditor;
+using System.Linq;
 
 public class EnemyAI : MonoBehaviour
 {
@@ -331,16 +333,32 @@ public class EnemyAI : MonoBehaviour
         if (_currentHealth <= 0)
         {
             Die();
+            return;
         }
-        else
+
+        // 检查是否需要逃跑
+        float healthPercent = _currentHealth / (enemyData?.Health ?? 1f);
+        bool shouldFlee = healthPercent <= fleeHealthThreshold;
+        if (shouldFlee && _currentState != EnemyState.Flee)
         {
-            //受伤后进入追击状态（被打当然要还手）
-            if (_currentState != EnemyState.Chase && _currentState != EnemyState.Attack)
-            {
-                ChangeState(EnemyState.Chase);
-            }
-            //TODO:血量低于30%时进入
+            //血量过低->逃跑
+            ChangeState(EnemyState.Flee);
         }
+        else if (!shouldFlee && _currentState != EnemyState.Chase && _currentState != EnemyState.Attack && _currentState != EnemyState.Flee)
+        {
+            //血量正常 + 不在追击/攻击/逃跑 -> 追击玩家（被打还手）
+            ChangeState(EnemyState.Chase);
+        }
+
+        // else
+        // {
+        //     //受伤后进入追击状态（被打当然要还手）
+        //     if (_currentState != EnemyState.Chase && _currentState != EnemyState.Attack)
+        //     {
+        //         ChangeState(EnemyState.Chase);
+        //     }
+        //     //TODO:血量低于30%时进入
+        // }
     }
 
     void Die()
@@ -375,6 +393,8 @@ public class EnemyAI : MonoBehaviour
         _currentState = EnemyState.Patrol;
         _patrolWaitTimer = 0f;
         _attackCooldown = 0f;
+        _fleeTimer = 0f;//重置逃跑计划
+
         //重新初始化外观
         if (_renderer != null && enemyData != null)
         {
@@ -385,7 +405,7 @@ public class EnemyAI : MonoBehaviour
     //========================================================
     //调试：再Scene视图中显示当前状态
     //=======================================================
-    void OnDrawGiSelected()
+    void OnDrawGizmosSelected()
     {
         //显示检测范围
         Gizmos.color = Color.yellow;
@@ -402,7 +422,11 @@ public class EnemyAI : MonoBehaviour
 
         Gizmos.DrawWireSphere(spawn, patrolRadius);
 
-        //显示巡逻不妙
+        //逃跑安全距离
+        Gizmos.color = new Color(0f, 1f, 1f, 0.3f);//半透明青色
+        Gizmos.DrawWireSphere(transform.position, safeDistance);
+
+        //显示巡逻
         if (Application.isPlaying && _currentState == EnemyState.Patrol)
         {
             Gizmos.color = Color.cyan;
@@ -410,4 +434,24 @@ public class EnemyAI : MonoBehaviour
             Gizmos.DrawLine(transform.position, _patrolTarget);
         }
     }
+
+#if UNITY_EDITOR
+void OnGUI()
+{
+    if (!Application.isPlaying) return;
+    if (!Selection.gameObjects.Contains(gameObject)) return;
+
+    // 在敌人头顶显示状态和血量
+    Vector3 screenPos = Camera.main.WorldToScreenPoint(transform.position + Vector3.up * 2f);
+    if (screenPos.z > 0)
+    {
+        GUI.color = Color.white;
+        GUI.Label(new Rect(screenPos.x - 50, Screen.height - screenPos.y, 100, 20),
+            $"{_currentState}");
+        GUI.Label(new Rect(screenPos.x - 50, Screen.height - screenPos.y + 20, 100, 20),
+            $"HP: {_currentHealth:F1}/{enemyData?.Health ?? 1f:F1}");
+    }
+}
+#endif
+
 }

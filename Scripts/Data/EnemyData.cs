@@ -5,7 +5,7 @@ public class EnemyData : ScriptableObject
 {
     [Header("基础属性")]
     [SerializeField] private string enemyName = "敌人";
-    [SerializeField] private float health = 1f;
+    [SerializeField] private float health = 5f;
     [SerializeField] private float speed = 3f;
     [SerializeField] private int scoreValue = 10;
     [SerializeField] private float damage = 1f;
