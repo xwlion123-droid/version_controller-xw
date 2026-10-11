@@ -1,5 +1,5 @@
-using UnityEngine;
 using TMPro;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class UIManager : SingletonBase<UIManager>, IPersistent
@@ -80,13 +80,17 @@ public class UIManager : SingletonBase<UIManager>, IPersistent
     {
         if (healthText != null)
         {
-            // 用 ❤️ 显示生命值
-            int hearts = 1;
-            for (int i = 0; i < health; i++)
-                hearts += 1;
-            healthText.text = "Blood:" + hearts;
+            healthText.text = "Blood: " + health;
         }
-        Debug.Log($"📱 UI 更新：生命 {health}");
+        //if (healthText != null)
+        //{
+        //    // 用 ❤️ 显示生命值
+        //    int hearts = 1;
+        //    for (int i = 0; i < health; i++)
+        //        hearts += 1;
+        //    healthText.text = "Blood:" + hearts;
+        //}
+        //Debug.Log($"📱 UI 更新：生命 {health}");
     }
 
     void OnWaveStart()

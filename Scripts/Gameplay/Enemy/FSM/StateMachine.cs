@@ -33,6 +33,7 @@ public class StateMachine
             return;
         }
 
+        Debug.Log($"🔄 状态切换：{CurrentState?.GetType().Name ?? "null"} → {typeof(T).Name}");
         IState newState = _states[type];
 
         if (newState == CurrentState) return;

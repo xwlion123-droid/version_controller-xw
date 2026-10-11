@@ -1,6 +1,6 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
-using System.Collections.Generic;
 
 public class EnemyPoolManager : SingletonBase<EnemyPoolManager>, IPersistent
 {
@@ -14,6 +14,11 @@ public class EnemyPoolManager : SingletonBase<EnemyPoolManager>, IPersistent
     protected override void Awake()
     {
         base.Awake();
+        //检查自己是不是重复实例
+        if (Instance != this) return;
+        //防止被销毁对象继续执行
+        if (gameObject.scene.name == null) return;
+
         InitializePool();
     }
 
@@ -34,20 +39,22 @@ public class EnemyPoolManager : SingletonBase<EnemyPoolManager>, IPersistent
 
     GameObject CreateEnemy()
     {
+        Debug.Log("🆕 创建新敌人（池中无可用）");
         // ✅ 用几何体创建敌人
         GameObject enemy = GameObject.CreatePrimitive(PrimitiveType.Cube);
         enemy.name = "Enemy";
         enemy.transform.localScale = Vector3.one * enemySize;
         enemy.GetComponent<MeshRenderer>().material.color = Color.red;
 
+        // 挂载EnemyAI
+        enemy.AddComponent<EnemyAI>();
+
         // 添加 Enemy 脚本
-        Enemy enemyScript = enemy.AddComponent<Enemy>();
-        enemyScript.SetPool(_pool);
-
+        //Enemy enemyScript = enemy.AddComponent<Enemy>();
+        //enemyScript.SetPool(_pool);
         //改用EnemyAI
-        EnemyAI ai = enemy.GetComponent<EnemyAI>();
-        // ai.SetPool(_pool);//如果你需要池引用
-
+        //EnemyAI ai = enemy.GetComponent<EnemyAI>();
+        //ai.SetPool(_pool);//如果你需要池引用
 
         // ✅ 确保 Rigidbody 存在（OnCollisionEnter 需要）
         if (enemy.GetComponent<Rigidbody>() == null)
@@ -63,6 +70,7 @@ public class EnemyPoolManager : SingletonBase<EnemyPoolManager>, IPersistent
 
     void OnGetEnemy(GameObject enemy)
     {
+        Debug.Log($"🎯 OnGetEnemy | InstanceID: {enemy.GetInstanceID()} | Name: {enemy.name}");
         enemy.SetActive(true);
         //重置AI状态
         EnemyAI ai = enemy.GetComponent<EnemyAI>();
@@ -104,7 +112,7 @@ public class EnemyPoolManager : SingletonBase<EnemyPoolManager>, IPersistent
     public GameObject GetEnemy(Vector3 position, Quaternion rotation, EnemyData data)
     {
         GameObject enemy = _pool.Get();
-        enemy.transform.position = position;
+        enemy.transform.position = position;      // ← 必须设置
         enemy.transform.rotation = rotation;
 
         // 传入敌人数据
@@ -116,9 +124,11 @@ public class EnemyPoolManager : SingletonBase<EnemyPoolManager>, IPersistent
 
         //初始化EnemyAI
         EnemyAI ai = enemy.GetComponent<EnemyAI>();
-        if (ai != null && data != null)
+        if (ai != null)
         {
             ai.Initialize(data);
+            // ✅ 关键：重置出生点
+            // 在 EnemyAI.Initialize 里要更新 _spawnPosition
         }
 
         return enemy;

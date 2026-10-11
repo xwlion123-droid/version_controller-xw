@@ -71,10 +71,10 @@ public class Bullet : MonoBehaviour
             }
 
             // ✅ 播放命中音效
-            // AudioPoolManager.Instance?.PlayHit();
+            AudioPoolManager.Instance?.PlayHit();
 
             // ✅ 播放命中特效
-            // EffectPoolManager.Instance?.PlayHitEffect(transform.position);
+            EffectPoolManager.Instance?.PlayHitEffect(transform.position);
             //销毁子弹（实际应该收回池）
             ReturnToPool();//回池而非销毁
         }
@@ -82,7 +82,7 @@ public class Bullet : MonoBehaviour
         {
             //回池
             // ✅ 碰到墙壁也播放小特效（可选）
-            // EffectPoolManager.Instance?.PlayHitEffect(transform.position);
+            EffectPoolManager.Instance?.PlayHitEffect(transform.position);
             ReturnToPool();
         }
     }

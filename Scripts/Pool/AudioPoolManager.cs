@@ -1,6 +1,6 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
-using System.Collections.Generic;
 
 public class AudioPoolManager : SingletonBase<AudioPoolManager>, IPersistent
 {
@@ -18,6 +18,11 @@ public class AudioPoolManager : SingletonBase<AudioPoolManager>, IPersistent
     protected override void Awake()
     {
         base.Awake();
+        //检查自己是不是重复实例
+        if (Instance != this) return;
+        //防止被销毁对象继续执行
+        if (gameObject.scene.name == null) return;
+
         InitializeClips();
         InitializePool();
     }

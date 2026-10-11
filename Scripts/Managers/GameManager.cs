@@ -53,7 +53,7 @@ public class GameManager : SingletonBase<GameManager>, IPersistent
         onScoreChanged?.RaiseEvent(score);
 
         // ✅ 播放得分音效
-        // AudioPoolManager.Instance?.PlayScore();
+        AudioPoolManager.Instance?.PlayScore();
         Debug.Log($"<color=green>得分：+{amount},总分：{score}</color>");
     }
 
@@ -91,7 +91,7 @@ public class GameManager : SingletonBase<GameManager>, IPersistent
         Debug.Log($"<color=cyan>第 {waveNumber} 波开始！</color>");
     }
 
-    public void ComplateWave()
+    public void CompleteWave()
     {
         waveNumber++;
         Debug.Log($"<color=cyan> 第 {waveNumber - 1}波完成！</color>");

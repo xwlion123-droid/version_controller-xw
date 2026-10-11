@@ -1,6 +1,6 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
-using System.Collections.Generic;
 
 public class EffectPoolManager : SingletonBase<EffectPoolManager>, IPersistent
 {
@@ -14,6 +14,11 @@ public class EffectPoolManager : SingletonBase<EffectPoolManager>, IPersistent
     protected override void Awake()
     {
         base.Awake();
+        //检查自己是不是重复实例
+        if (Instance != this) return;
+        //防止被销毁对象继续执行
+        if (gameObject.scene.name == null) return;
+
         InitializePools();
     }
 
@@ -62,6 +67,8 @@ public class EffectPoolManager : SingletonBase<EffectPoolManager>, IPersistent
     {
         GameObject effect = new GameObject("HitEffect");
         ParticleSystem ps = effect.AddComponent<ParticleSystem>();
+        // ✅ 关键：先停止再配置
+        ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
 
         // 主模块
         var main = ps.main;
@@ -122,6 +129,8 @@ public class EffectPoolManager : SingletonBase<EffectPoolManager>, IPersistent
         GameObject effect = new GameObject("ExplosionEffect");
         ParticleSystem ps = effect.AddComponent<ParticleSystem>();
 
+        // ✅ 关键：先停止
+        ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         var main = ps.main;
         main.duration = 0.5f;
         main.loop = false;
@@ -176,7 +185,8 @@ public class EffectPoolManager : SingletonBase<EffectPoolManager>, IPersistent
     {
         GameObject effect = new GameObject("MuzzleFlash");
         ParticleSystem ps = effect.AddComponent<ParticleSystem>();
-
+        // ✅ 关键：先停止
+        ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         var main = ps.main;
         main.duration = 0.1f;
         main.loop = false;

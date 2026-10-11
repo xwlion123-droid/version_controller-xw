@@ -1,6 +1,4 @@
-using System;
 using UnityEngine;
-using UnityEngine.UI;
 
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerController : MonoBehaviour
@@ -136,17 +134,17 @@ public class PlayerController : MonoBehaviour
             return;
         lastFireTime = Time.time;
         //触发射击事件 （Day3.4会用到）
-        // EventCenter.Broadcast("OnWeaponFired");
+        //EventCenter.Broadcast("OnWeaponFired");
         // ✅ 枪口闪光
-        // if (bulletSpawnPoint != null)
-        // {
-        //     EffectPoolManager.Instance?.PlayMuzzleFlash(
-        //         bulletSpawnPoint.position,
-        //         transform.rotation
-        //     );
-        // }
+        if (bulletSpawnPoint != null)
+        {
+            EffectPoolManager.Instance?.PlayMuzzleFlash(
+                bulletSpawnPoint.position,
+                transform.rotation
+            );
+        }
         // ✅ 播放射击音效
-        // AudioPoolManager.Instance?.PlayShoot();
+        AudioPoolManager.Instance?.PlayShoot();
         //使用对象池生成子弹
         if (BulletPoolManager.Instance != null)
         {
@@ -212,7 +210,7 @@ public class PlayerController : MonoBehaviour
             //受到伤害
             GameManager.Instance?.TakeDamage(1);
             // ✅ 播放受伤音效
-            // AudioPoolManager.Instance?.PlayDamage();
+            AudioPoolManager.Instance?.PlayDamage();
 
             BecomeInvincible(playerData?.InvincibleTime ?? 1f);
 
