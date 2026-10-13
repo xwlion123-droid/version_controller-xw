@@ -305,6 +305,17 @@ public class WaveManager : SingletonBase<WaveManager>, IPersistent
         onWaveComplete?.RaiseEvent(CurrentWaveNumber);
 
         ChangeState(WaveState.Completed);
+
+        //给玩家奖励
+        int reward = 50 + _currentWaveIndex * 25;
+        GameManager.Instance?.AddScore(reward);
+
+        //回血
+        if (_currentWaveIndex % 2 == 0)
+        {
+            GameManager.Instance?.Heal(1);
+        }
+        Debug.Log($"<color=cyan> 波次奖励：+{reward} 分 </color>");
     }
 
     void OnEnterCompleted()

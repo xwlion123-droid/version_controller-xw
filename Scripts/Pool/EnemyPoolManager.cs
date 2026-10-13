@@ -61,6 +61,8 @@ public class EnemyPoolManager : SingletonBase<EnemyPoolManager>, IPersistent
         {
             Rigidbody rb = enemy.AddComponent<Rigidbody>();
             rb.useGravity = false;
+            //关闭运动学
+            rb.isKinematic = false;
             rb.constraints = RigidbodyConstraints.FreezeRotation;
         }
 

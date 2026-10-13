@@ -60,7 +60,7 @@ public class WaveData : ScriptableObject
 
     [Header("难度配置")]
     [Tooltip("血量倍率（用于难度曲线）")]
-    [Range(1f, 10f)] public float healthMultiolier = 1f;
+    [Range(1f, 10f)] public float healthMultiplier = 1f;
 
     [Tooltip("速度倍率")]
     [Range(1f, 5f)] public float speedMultiplier = 1f;

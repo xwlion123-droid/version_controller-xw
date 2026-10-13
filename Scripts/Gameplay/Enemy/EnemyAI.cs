@@ -153,7 +153,9 @@ public class EnemyAI : MonoBehaviour
 
         if (shouldFlee && _stateMachine.CurrentState is not FleeState)
         {
-            _stateMachine.ChangeState<FleeState>();
+            //不逃跑
+            Debug.Log("暂时不逃跑");
+            //_stateMachine.ChangeState<FleeState>();
         }
         else if (!shouldFlee && _stateMachine.CurrentState is not ChaseState && _stateMachine.CurrentState is not FleeState)
         {
@@ -174,6 +176,9 @@ public class EnemyAI : MonoBehaviour
         int score = enemyData?.ScoreValue ?? 10;
         GameManager.Instance?.AddScore(score);
         Debug.Log($"<color=green>击杀敌人！获得{score}分</color>");
+
+        //通知波次管理器
+        WaveManager.Instance?.OnEnemyKilled();
 
         AudioPoolManager.Instance?.PlayExplosion();
         EffectPoolManager.Instance?.PlayExplosionEffect(transform.position);
