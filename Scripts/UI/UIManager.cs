@@ -4,6 +4,10 @@ using UnityEngine.UI;
 
 public class UIManager : SingletonBase<UIManager>, IPersistent
 {
+    [Header("流程事件（订阅）")]
+    [SerializeField] private VoidEventChannel onGamePause;
+    [SerializeField] private VoidEventChannel onGameResume;
+
     [Header("事件通道（订阅）")]
     [SerializeField] private IntEventChannel onScoreChanged;
     [SerializeField] private IntEventChannel onHealthChanged;
@@ -21,10 +25,27 @@ public class UIManager : SingletonBase<UIManager>, IPersistent
     [SerializeField] private TextMeshProUGUI finalScoreText;
     [SerializeField] private Button restartButton;
 
+    [Header("暂停 UI")]
+    [SerializeField] private GameObject pausePanel;
+    [SerializeField] private Button resumeButton;
+    [SerializeField] private Button pauseRestartButton;
+    [SerializeField] private Button menuButton;
+
+    [Header("胜利 UI")]
+    [SerializeField] private GameObject victoryPanel;
+    [SerializeField] private TextMeshProUGUI victoryScoreText;
+    [SerializeField] private Button victoryRestartButton;
+    [SerializeField] private Button victoryMenuButton;
+
+    [Header("存档 UI")]
+    [SerializeField] private TextMeshProUGUI highScoreText;  // ✅ 新增：显示最高分
+    [SerializeField] private TextMeshProUGUI totalKillsText; // ✅ 新增：显示总击杀数
     // ===== 生命周期 =====
     void OnEnable()
     {
         // 订阅事件
+        onGamePause?.Subscribe(OnGamePause);
+        onGameResume?.Subscribe(OnGameResume);
         onScoreChanged?.Subscribe(OnScoreChanged);
         onHealthChanged?.Subscribe(OnHealthChanged);
         onGameOver?.Subscribe(OnGameOver);
@@ -32,20 +53,55 @@ public class UIManager : SingletonBase<UIManager>, IPersistent
         onWaveComplete?.Subscribe(OnWaveComplete);
         onWavePrepare?.Subscribe(OnWavePrepare);
         onAllWavesComplete?.Subscribe(OnAllWavesComplete);
+        // ✅ 更新最高分显示
+        UpdateHighScoreDisplay();
+        //暂停按钮
+        if (resumeButton != null)
+            resumeButton.onClick.AddListener(OnResumeClicked);
+        if (pauseRestartButton != null)
+            pauseRestartButton.onClick.AddListener(OnPauseRestartClicked);
+        if (menuButton != null)
+            menuButton.onClick.AddListener(OnMenuClicked);
 
-        // 绑定按钮
+        // 胜利按钮
+        if (victoryRestartButton != null)
+            victoryRestartButton.onClick.AddListener(OnVictoryRestartClicked);
+        if (victoryMenuButton != null)
+            victoryMenuButton.onClick.AddListener(OnMenuClicked);
+
+        // 重启按钮
         if (restartButton != null)
-        {
             restartButton.onClick.AddListener(OnRestartButtonClicked);
-        }
 
         // 初始更新
         RefreshUI();
+
     }
 
+    /// <summary>
+    /// 更新最高分显示
+    /// </summary>
+    public void UpdateHighScoreDisplay()
+    {
+        if (SaveManager.Instance == null) return;
+
+        if (highScoreText != null)
+        {
+            int highScore = SaveManager.Instance.Data.highScore;
+            highScoreText.text = $"Highest Score: {highScore}";
+        }
+
+        if (totalKillsText != null)
+        {
+            int totalKills = SaveManager.Instance.Data.totalKills;
+            totalKillsText.text = $"Total Kill: {totalKills}";
+        }
+    }
     void OnDisable()
     {
         // 取消订阅
+        onGamePause?.Unsubscribe(OnGamePause);
+        onGameResume?.Unsubscribe(OnGameResume);
         onScoreChanged?.Unsubscribe(OnScoreChanged);
         onHealthChanged?.Unsubscribe(OnHealthChanged);
         onGameOver?.Unsubscribe(OnGameOver);
@@ -55,9 +111,18 @@ public class UIManager : SingletonBase<UIManager>, IPersistent
         onAllWavesComplete?.Unsubscribe(OnAllWavesComplete);
 
         if (restartButton != null)
-        {
             restartButton.onClick.RemoveListener(OnRestartButtonClicked);
-        }
+
+        if (resumeButton != null)
+            resumeButton.onClick.RemoveListener(OnResumeClicked);
+        if (pauseRestartButton != null)
+            pauseRestartButton.onClick.RemoveListener(OnPauseRestartClicked);
+        if (menuButton != null)
+            menuButton.onClick.RemoveListener(OnMenuClicked);
+        if (victoryRestartButton != null)
+            victoryRestartButton.onClick.RemoveListener(OnVictoryRestartClicked);
+        if (victoryMenuButton != null)
+            victoryMenuButton.onClick.RemoveListener(OnMenuClicked);
     }
 
     // ===== 初始 UI =====
@@ -66,7 +131,7 @@ public class UIManager : SingletonBase<UIManager>, IPersistent
         if (GameManager.Instance == null) return;
 
         if (scoreText != null)
-            scoreText.text = $"Score：{GameManager.Instance.Score}";
+            scoreText.text = $"Score:{GameManager.Instance?.Score}";
 
         if (healthText != null)
             healthText.text = BuildHealthText(GameManager.Instance.Health);
@@ -81,13 +146,18 @@ public class UIManager : SingletonBase<UIManager>, IPersistent
 
         if (gameOverPanel != null)
             gameOverPanel.SetActive(false);
+        // ✅ 确保所有面板初始隐藏（除了主菜单）
+        if (gameOverPanel != null) gameOverPanel.SetActive(false);
+        if (pausePanel != null) pausePanel.SetActive(false);
+        if (victoryPanel != null) victoryPanel.SetActive(false);
+        // ⚠️ MainMenuPanel 不要隐藏，因为 MainMenuUI.Start() 会显示它
     }
 
     // ===== 事件回调：分数 =====
     void OnScoreChanged(int score)
     {
         if (scoreText != null)
-            scoreText.text = $"Score：{score}";
+            scoreText.text = $"Score: {score}";
         Debug.Log($"📱 UI 更新：分数 {score}");
     }
 
@@ -107,6 +177,9 @@ public class UIManager : SingletonBase<UIManager>, IPersistent
 
         if (finalScoreText != null && GameManager.Instance != null)
             finalScoreText.text = $"Final Score: {GameManager.Instance.Score}";
+
+        // ✅ 更新最高分显示
+        UpdateHighScoreDisplay();
 
         Debug.Log($"📱 UI 显示：游戏结束");
     }
@@ -150,19 +223,37 @@ public class UIManager : SingletonBase<UIManager>, IPersistent
         if (waveText != null)
             waveText.text = " Pass The Task!";
 
-        // 可以在这里显示胜利面板
-        // if (victoryPanel != null) victoryPanel.SetActive(true);
+        //新增：显示胜利面板
+        if (victoryPanel != null)
+        {
+            victoryPanel.SetActive(true);
+            if (victoryScoreText != null && GameManager.Instance != null)
+                victoryScoreText.text = $"Final Score:{GameManager.Instance.Score}";
+        }
+    }
+    void OnGamePause()
+    {
+        if (pausePanel != null)
+            pausePanel.SetActive(true);
     }
 
+    void OnGameResume()
+    {
+        if (pausePanel != null)
+            pausePanel.SetActive(false);
+    }
     // ===== 按钮回调 =====
     void OnRestartButtonClicked()
     {
         Debug.Log("🔄 重新开始游戏");
 
-        GameManager.Instance?.ResetGame();
-
         if (gameOverPanel != null)
             gameOverPanel.SetActive(false);
+
+        //老的
+        //GameManager.Instance?.ResetGame();
+        //新的
+        GameFlowManager.Instance?.RestartGame();
 
         PlayerController player = FindFirstObjectByType<PlayerController>();
         if (player != null)
@@ -178,6 +269,32 @@ public class UIManager : SingletonBase<UIManager>, IPersistent
 
         // ✅ 重启波次系统
         WaveManager.Instance?.StartWaves();
+    }
+    //暂停按钮回调
+    void OnResumeClicked()
+    {
+        Debug.Log("继续游戏");
+        if (pausePanel != null) pausePanel.SetActive(false);
+        GameFlowManager.Instance?.ResumeGame();
+    }
+    void OnPauseRestartClicked()
+    {
+        Debug.Log("暂停中启动");
+        if (pausePanel != null) pausePanel.SetActive(false);
+        GameFlowManager.Instance?.RestartGame();
+    }
+    void OnMenuClicked()
+    {
+        Debug.Log("返回主菜单");
+        if (pausePanel != null) pausePanel.SetActive(false);
+        if (victoryPanel != null) victoryPanel.SetActive(false);
+        GameFlowManager.Instance?.ReturnToMainMenu();
+    }
+    void OnVictoryRestartClicked()
+    {
+        Debug.Log("胜利后重新启动");
+        if (victoryPanel != null) victoryPanel.SetActive(false);
+        GameFlowManager.Instance?.RestartGame();
     }
 
     // ===== 工具方法 =====

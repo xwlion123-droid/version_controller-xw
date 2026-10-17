@@ -50,7 +50,16 @@ public class WaveManager : SingletonBase<WaveManager>, IPersistent
 
     IEnumerator StartAfterDelay()
     {
+        //yield return new WaitForEndOfFrame();
+        //StartWaves();
+        // ✅ 等待玩家点击"开始游戏"
+        //yield return new WaitUntil(() => GameFlowManager.Instance != null && GameFlowManager.Instance.IsPlaying);
+
+        //StartWaves();
+        // ✅ 等待游戏开始
+        yield return new WaitUntil(() => Time.timeScale > 0f);
         yield return new WaitForEndOfFrame();
+
         StartWaves();
     }
 
@@ -66,8 +75,18 @@ public class WaveManager : SingletonBase<WaveManager>, IPersistent
             Debug.LogError("⚠️ WaveCollection 未配置！");
             return;
         }
-
+        // ✅ 强制重置所有状态
         _currentWaveIndex = -1;
+        _currentState = WaveState.Idle;
+        _enemiesSpawnedThisWave = 0;
+        _enemiesKilledThisWave = 0;
+        _totalEnemiesThisWave = 0;
+        if (_waveRoutine != null)
+        {
+            StopCoroutine(_waveRoutine);
+            _waveRoutine = null;
+        }
+
         StartNextWave();
     }
 
@@ -83,6 +102,10 @@ public class WaveManager : SingletonBase<WaveManager>, IPersistent
             // 所有波次完成
             _currentState = WaveState.AllCompleted;
             Debug.Log("<color=cyan>🏁 所有波次完成！</color>");
+
+            // ✅ 标记通关
+            SaveManager.Instance?.MarkCompleted();
+
             onAllWavesComplete?.RaiseEvent();
             return;
         }

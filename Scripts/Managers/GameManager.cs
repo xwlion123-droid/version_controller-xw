@@ -24,6 +24,10 @@ public class GameManager : SingletonBase<GameManager>, IPersistent
     public bool IsGameOver => isGameOver;
     public PlayerData PlayerData => playerData;
 
+    // ✅ 新增：最高分
+    public int HighScore => SaveManager.Instance?.Data?.highScore ?? 0;
+    public int TotalKills => SaveManager.Instance?.Data?.totalKills ?? 0;
+    public bool HasCompletedGame => SaveManager.Instance?.Data?.hasCompletedGame ?? false;
     //事件 
     // public System.Action<int> OnScoreChanged;
     // public System.Action<int> OnHealthChanged;
@@ -54,6 +58,18 @@ public class GameManager : SingletonBase<GameManager>, IPersistent
         // ✅ 播放得分音效
         AudioPoolManager.Instance?.PlayScore();
         Debug.Log($"<color=green>得分：+{amount},总分：{score}</color>");
+    }
+
+    // ✅ 新增：游戏结束更新最高分
+    void GameOver()
+    {
+        isGameOver = true;
+        onGameOver?.RaiseEvent();
+
+        // 更新最高分
+        SaveManager.Instance?.UpdateHighScore(score);
+
+        Debug.Log($"<color=red>游戏结束，最终分数{score}（最高分：{HighScore}）</color>");
     }
 
     public void TakeDamage(int damage)
@@ -104,18 +120,16 @@ public class GameManager : SingletonBase<GameManager>, IPersistent
         health = playerData?.MaxHealth ?? 3;
         waveNumber = 1;
         isGameOver = false;
-
-
         onScoreChanged?.RaiseEvent(score);
         onHealthChanged?.RaiseEvent(health);
         Debug.Log("<color=yellow>游戏已经重置</color>");
     }
 
-    void GameOver()
-    {
-        isGameOver = true;
-        // OnGameOver?.Invoke();
-        onGameOver?.RaiseEvent();
-        Debug.Log("<color=red>游戏结束，最终分数" + score + "</color>");
-    }
+    //void GameOver()
+    //{
+    //    isGameOver = true;
+    //    // OnGameOver?.Invoke();
+    //    onGameOver?.RaiseEvent();
+    //    Debug.Log("<color=red>游戏结束，最终分数" + score + "</color>");
+    //}
 }

@@ -63,13 +63,17 @@ public class PlayerController : MonoBehaviour
     //改为不使用enabled = false 而是用Update内的检查控制
     void Update()
     {
+        // ✅ 检查游戏结束
+        if (GameManager.Instance != null && GameManager.Instance.IsGameOver) return;
+        // ✅ 检查游戏暂停
+        if (GameFlowManager.Instance != null && !GameFlowManager.Instance.IsPlaying) return;
         //游戏结束时只跳过逻辑，不禁用脚本
-        if (GameManager.Instance != null && GameManager.Instance.IsGameOver)
-        {
-            //不执行移动/射击
-            // enabled = false;
-            return;
-        }
+        //if (GameManager.Instance != null && GameManager.Instance.IsGameOver)
+        //{
+        //    //不执行移动/射击
+        //    // enabled = false;
+        //    return;
+        //}
         HandleMovement();
         HandleShooting();
         UpdateInvincible();

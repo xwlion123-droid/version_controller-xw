@@ -102,8 +102,12 @@ public class EnemyAI : MonoBehaviour
 
     void Update()
     {
-        Debug.Log($"[{name}] Update | HP: {_currentHealth} | State: {_stateMachine.CurrentState?.GetType().Name}");
+        //Debug.Log($"[{name}] Update | HP: {_currentHealth} | State: {_stateMachine.CurrentState?.GetType().Name}");
+        //if (GameManager.Instance != null && GameManager.Instance.IsGameOver) return;
+        //检查游戏结束
         if (GameManager.Instance != null && GameManager.Instance.IsGameOver) return;
+        //检查游戏暂停
+        if (GameFlowManager.Instance != null && !GameFlowManager.Instance.IsPlaying) return;
         // 统一玩家查找
         if (_player == null)
         {
@@ -172,10 +176,11 @@ public class EnemyAI : MonoBehaviour
 
     void Die()
     {
-        Debug.LogError($"💀💀💀 {name} 死亡了！位置：{transform.position}");
         int score = enemyData?.ScoreValue ?? 10;
         GameManager.Instance?.AddScore(score);
         Debug.Log($"<color=green>击杀敌人！获得{score}分</color>");
+        // ✅ 增加击杀统计
+        SaveManager.Instance?.AddKill();
 
         //通知波次管理器
         WaveManager.Instance?.OnEnemyKilled();
